@@ -3,7 +3,6 @@ import 'package:flutter_openai_stream/core/utils/id_generator.dart';
 import 'package:flutter_openai_stream/widgets/common/chat_box.dart';
 import 'package:go_router/go_router.dart';
 import '../../widgets/common/sidebar.dart';
-import '../../widgets/suggestion_cards.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,6 +12,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  bool _isSidebarCollapsed = false;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -50,7 +50,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       body: Row(
         children: [
-          const SideBar(),
+          SideBar(
+            isCollapsed: _isSidebarCollapsed,
+            onToggle: () {
+              setState(() {
+                _isSidebarCollapsed = !_isSidebarCollapsed;
+              });
+            },
+          ),
           Expanded(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -75,18 +82,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               textAlign: TextAlign.center,
                             ),
                             
-                            const SizedBox(height: 12),
-                            
-                            // Subtitle
-                            Text(
-                              'Ask a clinical question or type \'/\' for commands',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            
-                            const SizedBox(height: 48),
+                            const SizedBox(height: 32),
                             
                             // Chat Input
                             ConstrainedBox(
@@ -100,49 +96,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             const SizedBox(height: 32),
                             
                             // Suggestion Cards
-                            const SuggestionCards(),
+                            // const SuggestionCards(),
                             
-                            const SizedBox(height: 60),
+                            // const SizedBox(height: 60),
                           ],
                         ),
                       ),
                     ),
                   ),
-                  
-                  // Footer
-                  _buildFooter(isDark),
                 ],
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFooter(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 24,
-        runSpacing: 12,
-        children: [
-          'Pro',
-          'Enterprise',
-          'Store',
-          'Blog',
-          'Careers',
-          'Privacy Policy',
-          'Terms of Service',
-        ].map((text) => Text(
-          text,
-          style: TextStyle(
-            fontSize: 13,
-            color: isDark ? Colors.grey[500] : const Color(0xFF64748B),
-            fontWeight: FontWeight.w400,
-          ),
-        )).toList(),
       ),
     );
   }

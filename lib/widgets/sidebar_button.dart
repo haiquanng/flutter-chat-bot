@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_openai_stream/theme/colors.dart';
+import 'package:flutter_openai_stream/core/theme/colors.dart';
 
 class SideBarButton extends StatelessWidget {
   final bool isCollapsed;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_openai_stream/core/provider/theme_provider.dart';
 import 'package:flutter_openai_stream/pages/chat/chat_page.dart';
-import 'package:flutter_openai_stream/theme/colors.dart';
+import 'package:flutter_openai_stream/core/theme/colors.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'pages/home/home_page.dart';

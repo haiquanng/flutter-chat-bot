@@ -27,7 +27,7 @@ class ChatHeader extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            'Chat $chatId',
+            'Ask me anything',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),

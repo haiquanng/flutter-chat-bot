@@ -22,6 +22,7 @@ class _ChatPageState extends State<ChatPage> {
   final List<Message> _messages = [];
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
+  bool _isSidebarCollapsed = false;
 
   @override
   void initState() {
@@ -96,7 +97,14 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       body: Row(
         children: [
-          const SideBar(),
+          SideBar(
+            isCollapsed: _isSidebarCollapsed,
+            onToggle: () {
+              setState(() {
+                _isSidebarCollapsed = !_isSidebarCollapsed;
+              });
+            },
+          ),
           Expanded(
             child: Column(
               children: [
@@ -105,17 +113,31 @@ class _ChatPageState extends State<ChatPage> {
 
                 // Messages Area
                 Expanded(
-                  child: _messages.isEmpty
-                      ? const ChatEmptyState()
-                      : MessagesList(
-                          messages: _messages,
-                          scrollController: _scrollController),
-                ),
+                  child: Center(
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: Column(
+                        children: [
+                          // Messages Area
+                          Expanded(
+                            child: _messages.isEmpty
+                                ? const ChatEmptyState()
+                                : MessagesList(
+                                    messages: _messages,
+                                    scrollController: _scrollController,
+                                  ),
+                          ),
 
-                // Input Area
-                ChatInputBox(
-                    onMessageSubmit: _handleMessageSubmit,
-                    disabled: _isLoading),
+                          // Input Area
+                          ChatInputBox(
+                            onMessageSubmit: _handleMessageSubmit,
+                            disabled: _isLoading,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
