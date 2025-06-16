@@ -35,6 +35,7 @@ class MessageContent extends StatelessWidget {
       ),
       child: message.isLoading
           ? buildLoadingIndicator()
+          // : null,
           : formattedMessage(context, isDark, message),
     );
   }
