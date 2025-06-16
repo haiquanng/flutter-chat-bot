@@ -74,7 +74,6 @@ class _ChatPageState extends State<ChatPage> {
             isLoading: false,
           );
         });
-        // scrollToBottom(_scrollController);
       }
     } catch (e) {
       setState(() {

@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_openai_stream/core/provider/theme_provider.dart';
 import 'package:flutter_openai_stream/pages/chat/chat_page.dart';
 import 'package:flutter_openai_stream/theme/colors.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'pages/home/home_page.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+        create: (_) => ThemeProvider(),
+        child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,11 +37,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp.router(
       title: 'AI Chat Assistant',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeProvider.themeMode, 
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
     );
