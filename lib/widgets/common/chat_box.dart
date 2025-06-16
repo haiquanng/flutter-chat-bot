@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ChatBox extends StatefulWidget {
   final Function(String) onSubmit;
+  final Function()? onAttachFile;
   final String placeholder;
   final bool disabled;
+  final double maxHeight;
 
   const ChatBox({
     super.key,
     required this.onSubmit,
-    this.placeholder = 'Type your message...',
+    this.onAttachFile,
+    this.placeholder = 'Type your message here...',
     this.disabled = false,
+    this.maxHeight = 120.0,
   });
 
   @override
@@ -28,9 +33,12 @@ class _ChatBoxState extends State<ChatBox> {
   }
 
   void _handleSubmit() {
-    if (_controller.text.trim().isNotEmpty && !widget.disabled) {
-      widget.onSubmit(_controller.text.trim());
+    final text = _controller.text.trim();
+    if (text.isNotEmpty && !widget.disabled) {
+      widget.onSubmit(text);
       _controller.clear();
+      setState(() {});
+      _focusNode.unfocus();
     }
   }
 
@@ -38,58 +46,111 @@ class _ChatBoxState extends State<ChatBox> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF334155) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(width: 16),
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              enabled: !widget.disabled,
-              maxLines: null,
-              keyboardType: TextInputType.multiline,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _handleSubmit(),
-              decoration: InputDecoration(
-                hintText: widget.placeholder,
-                border: InputBorder.none,
-                hintStyle: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+          // Input area with keyboard listener
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: 56.0,
+              maxHeight: widget.maxHeight,
+            ),
+            // ignore: deprecated_member_use
+            child: RawKeyboardListener(
+              focusNode: FocusNode(),
+              // ignore: deprecated_member_use
+              onKey: (RawKeyEvent event) {
+                // ignore: deprecated_member_use
+                if (event is RawKeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.enter &&
+                    // ignore: deprecated_member_use
+                    !event.isShiftPressed) {
+                  _handleSubmit();
+                }
+              },
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                enabled: !widget.disabled,
+                maxLines: null,
+                minLines: 1,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.newline,
+                decoration: InputDecoration(
+                  hintText: widget.placeholder,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[500],
+                    fontSize: 16,
+                  ),
+                ),
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                  height: 1.4,
                 ),
               ),
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black87,
-                fontSize: 16,
-              ),
             ),
           ),
-          IconButton(
-            onPressed: widget.disabled ? null : _handleSubmit,
-            icon: Icon(
-              Icons.send,
-              color: widget.disabled
-                  ? Colors.grey
-                  : theme.colorScheme.primary,
+
+          // Action
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: widget.disabled ? null : widget.onAttachFile,
+                  icon: Icon(
+                    Icons.attach_file,
+                    size: 22,
+                    color: widget.disabled
+                        ? Colors.grey
+                        : (isDark ? Colors.grey[300] : Colors.grey[600]),
+                  ),
+                  tooltip: 'Attach file',
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: widget.disabled
+                        ? Colors.grey[300]
+                        : theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    onPressed: widget.disabled ? null : _handleSubmit,
+                    padding: EdgeInsets.zero,
+                    icon: Icon(
+                      Icons.arrow_upward,
+                      size: 16,
+                      color: widget.disabled ? Colors.grey[600] : Colors.white,
+                    ),
+                    tooltip: 'Send message',
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
     );

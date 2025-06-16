@@ -18,6 +18,8 @@ class ChatInputBox extends StatelessWidget {
         constraints: const BoxConstraints(maxHeight: 700),
         child: ChatBox(
           onSubmit: onMessageSubmit,
+          onAttachFile: null,
+          maxHeight: 400.0,
           placeholder: "Type your message here...",
           disabled: disabled,
         ),
