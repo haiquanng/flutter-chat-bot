@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_openai_stream/core/constants/app_sizes.dart';
+import 'package:flutter_openai_stream/core/utils/helper.dart';
 import 'package:go_router/go_router.dart';
 
 class SideBar extends StatefulWidget {
@@ -211,6 +212,8 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
                 ? IconButton(
                     onPressed: () {
                       // Handle account/profile
+                      showToast(context: context, message: "Not implemented yet",
+                          icon: Icons.info, iconColor: Colors.red);
                     },
                     icon: const Icon(Icons.account_circle, size: 24),
                     tooltip: 'Account',
@@ -240,6 +243,8 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       onTap: () {
+                        showToast(context: context, message: "Not implemented yet",
+                            icon: Icons.info, iconColor: Colors.red);
                         // Handle account/profile
                       },
                     ),

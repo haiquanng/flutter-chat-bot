@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_openai_stream/models/message.dart';
-
 
 Widget actionButton({
   required IconData icon,
@@ -25,21 +23,23 @@ Widget actionButton({
   );
 }
 
-void copyToClipboardAndShowSnackBar(BuildContext context, Message text) {
-  // Function to copy text to clipboard
-  Clipboard.setData(ClipboardData(text: text.content));
-  
-  // Show a snackbar to confirm the action
+void showToast({
+  required BuildContext context,
+  required String message,
+  IconData icon = Icons.info,
+  Color iconColor = Colors.blue,
+  Duration duration = const Duration(seconds: 1),
+}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: const Row(
+      content: Row(
         children: [
-          Icon(Icons.check, color: Colors.green),
-          SizedBox(width: 8),
-          Text('Copied to clipboard!'),
+          Icon(icon, color: iconColor),
+          const SizedBox(width: 8),
+          Flexible(child: Text(message)),
         ],
       ),
-      duration: const Duration(seconds: 1),
+      duration: duration,
       behavior: SnackBarBehavior.floating,
       margin: EdgeInsets.only(
         bottom: 20,
@@ -54,11 +54,11 @@ void copyToClipboardAndShowSnackBar(BuildContext context, Message text) {
 }
 
 void feedbackResponse(bool isPositive, Message message) {
-    // Solving feedback logic here
-    // Positive feedback change color of icon to green
-    // Negative feedback open a modal or dialog to ask for more details
+  // Solving feedback logic here
+  // Positive feedback change color of icon to green
+  // Negative feedback open a modal or dialog to ask for more details
 
-    // can send this to your analytics or feedback system
-    print(
-        'Feedback: ${isPositive ? 'Positive' : 'Negative'} for message: ${message.content.substring(0, 50)}...');
-  }
+  // can send this to your analytics or feedback system
+  print(
+      'Feedback: ${isPositive ? 'Positive' : 'Negative'} for message: ${message.content.substring(0, 50)}...');
+}

@@ -17,7 +17,11 @@ class MessageActions extends StatelessWidget {
           actionButton(
             icon: Icons.content_copy,
             tooltip: 'Copy',
-            onPressed: () => copyToClipboardAndShowSnackBar(context, message),
+            onPressed: () => showToast(
+                context: context,
+                message: 'Copied to clipboard!',
+                icon: Icons.check,
+                iconColor: Colors.green),
           ),
           const SizedBox(width: 8),
           actionButton(
@@ -36,5 +40,3 @@ class MessageActions extends StatelessWidget {
     );
   }
 }
-
-

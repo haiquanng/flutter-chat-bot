@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_openai_stream/core/constants/app_sizes.dart';
+import 'package:flutter_openai_stream/core/utils/helper.dart';
 
 class ChatBox extends StatefulWidget {
   final Function(String) onSubmit;
@@ -120,7 +121,14 @@ class _ChatBoxState extends State<ChatBox> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  onPressed: widget.disabled ? null : widget.onAttachFile,
+                  onPressed: widget.disabled
+                      ? null
+                      : () => showToast(
+                            context: context,
+                            message: "No support yet!",
+                            icon: Icons.info_outline,
+                            iconColor: Colors.orange,
+                          ),
                   icon: Icon(
                     Icons.attach_file,
                     size: 22,
