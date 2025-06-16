@@ -1,23 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_openai_stream/pages/home_page.dart';
-
-// import 'chat_screen.dart';
+import 'package:flutter_openai_stream/pages/chat/chat_page.dart';
+import 'package:flutter_openai_stream/theme/colors.dart';
+import 'package:go_router/go_router.dart';
+import 'pages/home/home_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final GoRouter _router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: '/chat/:chatId',
+        builder: (context, state) {
+          final chatId = state.pathParameters['chatId']!;
+          return ChatPage(chatId: chatId);
+        },
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Chat Bot',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomePage(),
+    return MaterialApp.router(
+      title: 'AI Chat Assistant',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      routerConfig: _router,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
