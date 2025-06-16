@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_openai_stream/core/constants/app_sizes.dart';
 import 'package:go_router/go_router.dart';
 
 class SideBar extends StatefulWidget {
@@ -65,7 +66,7 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      width: widget.isCollapsed ? 60 : 260,
+      width: widget.isCollapsed ? AppSizes.kSidebarCollapseWidth : AppSizes.kSidebarExpandWidth,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         border: Border(

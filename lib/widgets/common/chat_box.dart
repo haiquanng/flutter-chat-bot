@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_openai_stream/core/constants/app_sizes.dart';
 
 class ChatBox extends StatefulWidget {
   final Function(String) onSubmit;
@@ -14,7 +15,7 @@ class ChatBox extends StatefulWidget {
     this.onAttachFile,
     this.placeholder = 'Type your message here...',
     this.disabled = false,
-    this.maxHeight = 120.0,
+    this.maxHeight = AppSizes.kChatBoxMaxHeight,
   });
 
   @override
@@ -57,6 +58,7 @@ class _ChatBoxState extends State<ChatBox> {
         ),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),

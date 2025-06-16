@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_openai_stream/core/constants/app_sizes.dart';
 import 'package:flutter_openai_stream/widgets/common/chat_box.dart';
 
 class ChatInputBox extends StatelessWidget {
@@ -19,7 +20,7 @@ class ChatInputBox extends StatelessWidget {
         child: ChatBox(
           onSubmit: onMessageSubmit,
           onAttachFile: null,
-          maxHeight: 400.0,
+          maxHeight: AppSizes.kChatBoxMaxHeight,
           placeholder: "Type your message here...",
           disabled: disabled,
         ),
