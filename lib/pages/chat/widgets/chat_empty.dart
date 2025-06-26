@@ -1,3 +1,5 @@
+// incase of an empty chat (because there are no data stored in the database,
+// so chats will be empty if user reloads the app)
 import 'package:flutter/material.dart';
 
 class ChatEmptyState extends StatelessWidget {

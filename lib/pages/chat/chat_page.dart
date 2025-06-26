@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_openai_stream/core/utils/scroll.dart';
 import 'package:flutter_openai_stream/pages/chat/widgets/chat_empty.dart';
 import 'package:flutter_openai_stream/pages/chat/widgets/chat_header.dart';
-import 'package:flutter_openai_stream/pages/chat/widgets/chat_input.dart';
 import 'package:flutter_openai_stream/pages/chat/widgets/messages_list.dart';
 import 'package:go_router/go_router.dart';
 import '../../widgets/common/sidebar.dart';
-import '../../services/chat_service.dart';
-import '../../models/message.dart';
+import 'controllers/chat_controller.dart';
+import 'widgets/modern_chat_input.dart';
 
 class ChatPage extends StatefulWidget {
   final String chatId;
@@ -19,77 +17,27 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final List<Message> _messages = [];
-  final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
+  late final ChatController _chatController;
   bool _isSidebarCollapsed = false;
 
   @override
   void initState() {
     super.initState();
+    _chatController = ChatController();
 
-    // Get initial message from router extra if available
+    // Handle initial message from router
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final extra = GoRouterState.of(context).extra;
       if (extra is String && extra.isNotEmpty) {
-        _handleMessageSubmit(extra);
+        _chatController.sendMessage(extra);
       }
     });
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _chatController.dispose();
     super.dispose();
-  }
-
-  void _handleMessageSubmit(String message) async {
-    if (message.trim().isEmpty) return;
-
-    setState(() {
-      _messages.add(Message(
-        content: message,
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
-      _messages.add(Message(
-        content: '',
-        isUser: false,
-        timestamp: DateTime.now(),
-        isLoading: true,
-      ));
-      _isLoading = true;
-    });
-
-    scrollToBottom(_scrollController);
-
-    try {
-      String response = '';
-      await for (String chunk in ChatService.getChatResponse(message)) {
-        setState(() {
-          response += chunk;
-          _messages[_messages.length - 1] = Message(
-            content: response.trim(),
-            isUser: false,
-            timestamp: DateTime.now(),
-            isLoading: false,
-          );
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _messages[_messages.length - 1] = Message(
-          content: 'Sorry, I encountered an error. Please try again.',
-          isUser: false,
-          timestamp: DateTime.now(),
-          isLoading: false,
-        );
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -97,6 +45,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       body: Row(
         children: [
+          // Sidebar
           SideBar(
             isCollapsed: _isSidebarCollapsed,
             onToggle: () {
@@ -105,6 +54,8 @@ class _ChatPageState extends State<ChatPage> {
               });
             },
           ),
+          
+          // Main chat area
           Expanded(
             child: Column(
               children: [
@@ -118,20 +69,29 @@ class _ChatPageState extends State<ChatPage> {
                       constraints: const BoxConstraints(maxWidth: 800),
                       child: Column(
                         children: [
-                          // Messages Area
+                          // Messages
                           Expanded(
-                            child: _messages.isEmpty
-                                ? const ChatEmptyState()
-                                : MessagesList(
-                                    messages: _messages,
-                                    scrollController: _scrollController,
-                                  ),
+                            child: AnimatedBuilder(
+                              animation: _chatController,
+                              builder: (context, child) {
+                                return _chatController.messages.isEmpty
+                                    ? const ChatEmptyState()
+                                    : MessagesList(
+                                        messages: _chatController.messages,
+                                        scrollController: _chatController.scrollController,
+                                      );
+                              },
+                            ),
                           ),
 
-                          // Input Area
-                          ChatInputBox(
-                            onMessageSubmit: _handleMessageSubmit,
-                            disabled: _isLoading,
+                          // Modern Chat Input (new design)
+                          AnimatedBuilder(
+                            animation: _chatController,
+                            builder: (context, child) {
+                              return ModernChatInput(
+                                controller: _chatController,
+                              );
+                            },
                           ),
                         ],
                       ),

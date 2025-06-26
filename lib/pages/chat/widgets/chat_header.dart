@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 
 class ChatHeader extends StatelessWidget {
   final String chatId;
+  final String text;
 
-  const ChatHeader({super.key, required this.chatId});
+  const ChatHeader({super.key, required this.chatId, this.text = ''});
 
 
   @override
@@ -27,7 +28,7 @@ class ChatHeader extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            'Ask me anything',
+            text.isNotEmpty ? text : 'Ask my anything',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
