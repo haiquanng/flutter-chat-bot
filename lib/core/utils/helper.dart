@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_openai_stream/models/message.dart';
@@ -90,4 +91,23 @@ void feedbackResponse(bool isPositive, Message message) {
   // can send this to your analytics or feedback system
   print(
       'Feedback: ${isPositive ? 'Positive' : 'Negative'} for message: ${message.content.substring(0, 50)}...');
+}
+
+
+/// Helper class for keyboard shortcuts text
+class KeyboardShortcutHelper {
+  static String getShortcutText() {
+    // Use foundation.dart's defaultTargetPlatform which works on web
+    if (kIsWeb) {
+      return 'Press Shift+Enter for new line, Enter to send';
+    }
+    
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return 'Press Cmd+Enter for new line, Enter to send';
+      default:
+        return 'Press Ctrl+Enter for new line, Enter to send';
+    }
+  }
 }

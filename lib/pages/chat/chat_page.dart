@@ -54,14 +54,13 @@ class _ChatPageState extends State<ChatPage> {
               });
             },
           ),
-          
+
           // Main chat area
           Expanded(
             child: Column(
               children: [
                 // Chat Header
                 ChatHeader(chatId: widget.chatId),
-
                 // Messages Area
                 Expanded(
                   child: Center(
@@ -78,12 +77,12 @@ class _ChatPageState extends State<ChatPage> {
                                     ? const ChatEmptyState()
                                     : MessagesList(
                                         messages: _chatController.messages,
-                                        scrollController: _chatController.scrollController,
+                                        scrollController:
+                                            _chatController.scrollController,
                                       );
                               },
                             ),
                           ),
-
                           // Modern Chat Input (new design)
                           AnimatedBuilder(
                             animation: _chatController,

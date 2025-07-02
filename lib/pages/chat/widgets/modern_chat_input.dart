@@ -1,11 +1,13 @@
+// widgets/chat/modern_chat_input.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_openai_stream/core/utils/helper.dart';
-import '../controllers/chat_controller.dart';
-import '../handler/image_handler.dart';
+import 'package:flutter_openai_stream/pages/chat/controllers/chat_controller.dart';
+import 'package:flutter_openai_stream/pages/chat/handler/image_handler.dart';
+import 'package:flutter_openai_stream/pages/chat/widgets/image_preview.dart';
 
 /// A modern chat input widget that supports text input, image attachment, and sending messages.
+/// Layout inspired by Grok/Claude with text area on top and controls below.
 class ModernChatInput extends StatefulWidget {
   final ChatController controller;
 
@@ -22,7 +24,7 @@ class _ModernChatInputState extends State<ModernChatInput> {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final ImageHandler _imageHandler = ImageHandler();
-  
+
   Uint8List? _selectedImage;
   bool _isComposing = false;
 
@@ -60,14 +62,11 @@ class _ModernChatInputState extends State<ModernChatInput> {
       }
     } catch (e) {
       if (mounted) {
-        // Show error message to debug 
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(
-        //     content: Text('Failed to pick image: ${e.toString()}'),
-        //     backgroundColor: Colors.red,
-        //   ),
-        // );
-        showToast(context: context, message: 'Failed to pick image', icon: Icons.error, iconColor: Colors.red);
+        showToast(
+            context: context,
+            message: 'Failed to pick image',
+            icon: Icons.error,
+            iconColor: Colors.red);
       }
     }
   }
@@ -82,142 +81,24 @@ class _ModernChatInputState extends State<ModernChatInput> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Image preview
-          if (_selectedImage != null) _buildImagePreview(),
-          
-          // Input area
-          Container(
-            constraints: const BoxConstraints(maxHeight: 200),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade900 : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Attachment button
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: widget.controller.isLoading ? null : _handleImagePick,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          Icons.attach_file_rounded,
-                          color: widget.controller.isLoading
-                              ? Colors.grey.shade400
-                              : Colors.grey.shade600,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                
-                // Text input
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    focusNode: _focusNode,
-                    enabled: !widget.controller.isLoading,
-                    maxLines: null,
-                    textInputAction: TextInputAction.newline,
-                    decoration: InputDecoration(
-                      hintText: _getHintText("Type a message..."),
-                      hintStyle: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 16,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    style: const TextStyle(fontSize: 16),
-                    onChanged: (text) {
-                      setState(() {
-                        _isComposing = text.trim().isNotEmpty;
-                      });
-                    },
-                    onSubmitted: (_) {
-                      if (!widget.controller.isLoading) {
-                        _handleSubmit();
-                      }
-                    },
-                  ),
-                ),
-                
-                // Send/Stop button
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Material(
-                    color: _getSendButtonColor(),
-                    borderRadius: BorderRadius.circular(20),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: widget.controller.isLoading ? _handleStop : 
-                             (_isComposing || _selectedImage != null) ? _handleSubmit : null,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          _getSendButtonIcon(),
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
+          // Main input container - Grok/Claude style
+          _buildInputContainer(theme, isDark),
           // Helper text
           if (!widget.controller.isLoading)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                _getKeyboardShortcutText(),
+                KeyboardShortcutHelper.getShortcutText(),
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey.shade500,
@@ -230,43 +111,107 @@ class _ModernChatInputState extends State<ModernChatInput> {
     );
   }
 
-  Widget _buildImagePreview() {
+  Widget _buildInputContainer(ThemeData theme, bool isDark) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        color: isDark ? Colors.grey.shade900 : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _focusNode.hasFocus
+              // ignore: deprecated_member_use
+              ? theme.primaryColor.withOpacity(0.5)
+              : (isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.memory(
-              _selectedImage!,
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
+          // Text input area (Row 1)
+          _buildTextInputArea(),
+
+          // Controls area (Row 2)
+          _buildControlsArea(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextInputArea() {
+    final hasImage = _selectedImage != null;
+
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: hasImage ? 80 : 48, // Expand when image is present
+        maxHeight: 200,
+      ),
+      padding: EdgeInsets.fromLTRB(
+          hasImage ? 8 : 16, // Less left padding when image is present
+          12,
+          16,
+          8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image preview in top-left
+          if (hasImage)
+            ImagePreview(
+              imageBytes: _selectedImage!,
+              onClear: _clearImage,
             ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Image ready to send',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+
+          // Text input
+          Expanded(
+            // ignore: deprecated_member_use
+            child: RawKeyboardListener(
+              focusNode: FocusNode(),
+              // ignore: deprecated_member_use
+              onKey: (RawKeyEvent event) {
+                // ignore: deprecated_member_use
+                if (event is RawKeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.enter &&
+                    // ignore: deprecated_member_use
+                    !event.isShiftPressed) {
+                  _handleSubmit();
+                }
+              },
+              child: TextField(
+                controller: _textController,
+                focusNode: _focusNode,
+                enabled: !widget.controller.isLoading,
+                maxLines: null,
+                textInputAction: TextInputAction.newline,
+                decoration: InputDecoration(
+                  hintText: _getHintText("Type a message..."),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 16,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                style: const TextStyle(fontSize: 16),
+                onChanged: (text) {
+                  setState(() {
+                    _isComposing = text.trim().isNotEmpty;
+                  });
+                },
+                onSubmitted: (_) {
+                  if (!widget.controller.isLoading) {
+                    _handleSubmit();
+                  }
+                },
               ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 20),
-            onPressed: _clearImage,
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.grey.shade200,
-              foregroundColor: Colors.grey.shade600,
-              minimumSize: const Size(32, 32),
             ),
           ),
         ],
@@ -274,41 +219,98 @@ class _ModernChatInputState extends State<ModernChatInput> {
     );
   }
 
-  String _getKeyboardShortcutText() {
-    // Use foundation.dart's defaultTargetPlatform which works on web
-    if (kIsWeb) {
-      return 'Press Shift+Enter for new line, Enter to send';
-    }
-    
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        return 'Press Cmd+Enter for new line, Enter to send';
-      default:
-        return 'Press Ctrl+Enter for new line, Enter to send';
-    }
+  Widget _buildControlsArea() {
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Row(
+        children: [
+          // Attachment button
+          _buildAttachmentButton(),
+
+          const Spacer(),
+
+          // Send/Stop button
+          _buildSendButton(),
+        ],
+      ),
+    );
   }
 
-  String _getHintText(String text) {
-    return text;
+  Widget _buildAttachmentButton() {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: widget.controller.isLoading ? null : _handleImagePick,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Icon(
+            Icons.attach_file_rounded,
+            color: widget.controller.isLoading
+                ? Colors.grey.shade400
+                : Colors.grey.shade600,
+            size: 20,
+          ),
+        ),
+      ),
+    );
   }
 
-  Color _getSendButtonColor() {
+  String _getHintText(String defaultText) {
+    return defaultText;
+  }
+
+  Widget _buildSendButton() {
+    final canSend = _isComposing || _selectedImage != null;
+    final isActive = widget.controller.isLoading || canSend;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      child: Material(
+        color: _getSendButtonColor(isActive),
+        borderRadius: BorderRadius.circular(18),
+        elevation: isActive ? 2 : 0,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: widget.controller.isLoading
+              ? _handleStop
+              : canSend
+                  ? _handleSubmit
+                  : null,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(
+              widget.controller.isLoading
+                  ? Icons.stop_rounded
+                  : Icons.arrow_upward_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getSendButtonColor(bool isActive) {
     if (widget.controller.isLoading) {
-      return Colors.red.shade600; // Stop button color
+      return Colors.red.shade600;
     }
-    
-    if (_isComposing || _selectedImage != null) {
+
+    if (isActive) {
       return Theme.of(context).primaryColor;
     }
-    
-    return Colors.grey.shade400;
-  }
 
-  IconData _getSendButtonIcon() {
-    if (widget.controller.isLoading) {
-      return Icons.stop_rounded;
-    }
-    return Icons.arrow_upward_rounded;
+    return Colors.grey.shade400;
   }
 }
