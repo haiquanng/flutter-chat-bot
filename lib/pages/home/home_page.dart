@@ -1,7 +1,9 @@
+// pages/home/home_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_openai_stream/core/utils/id_generator.dart';
-import 'package:flutter_openai_stream/widgets/common/chat_box.dart';
+import 'package:flutter_openai_stream/pages/chat/widgets/chat_input.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:typed_data';
 import '../../widgets/common/sidebar.dart';
 
 class HomePage extends StatefulWidget {
@@ -35,10 +37,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void _handleMessageSubmit(String message) {
-    if (message.trim().isNotEmpty) {
+  void _handleMessageSubmit(String message, {Uint8List? imageBytes}) {
+    if (message.trim().isNotEmpty || imageBytes != null) {
       final chatId = generateChatId();
-      context.go('/chat/$chatId', extra: message);
+      
+      // Create initial message data to pass to chat page
+      final initialMessage = {
+        'text': message,
+        'imageBytes': imageBytes,
+      };
+      
+      context.go('/chat/$chatId', extra: initialMessage);
     }
   }
 
@@ -84,18 +93,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             
                             const SizedBox(height: 32),
                             
-                            // Chat Input
+                            // Unified Chat Input - can switch between classic and modern
                             ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 700),
-                              child: ChatBox(
+                              child: ChatInput(
                                 onSubmit: _handleMessageSubmit,
                                 placeholder: 'Message AI Assistant...',
+                                mode: ChatInputMode.homepage,
+                                style: ChatInputStyle.modern, // or ChatInputStyle.classic
                               ),
                             ),
                             
                             const SizedBox(height: 32),
                             
-                            // Suggestion Cards
+                            // Suggestion Cards (if you have them)
                             // const SuggestionCards(),
                             
                             // const SizedBox(height: 60),

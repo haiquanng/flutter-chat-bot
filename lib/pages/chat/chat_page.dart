@@ -1,11 +1,13 @@
+// pages/chat/chat_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_openai_stream/pages/chat/widgets/chat_empty.dart';
 import 'package:flutter_openai_stream/pages/chat/widgets/chat_header.dart';
+import 'package:flutter_openai_stream/pages/chat/widgets/chat_input.dart';
 import 'package:flutter_openai_stream/pages/chat/widgets/messages_list.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:typed_data';
 import '../../widgets/common/sidebar.dart';
 import 'controllers/chat_controller.dart';
-import 'widgets/modern_chat_input.dart';
 
 class ChatPage extends StatefulWidget {
   final String chatId;
@@ -25,19 +27,44 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _chatController = ChatController();
 
-    // Handle initial message from router
+    // Handle initial message from router with proper delay
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final extra = GoRouterState.of(context).extra;
-      if (extra is String && extra.isNotEmpty) {
-        _chatController.sendMessage(extra);
-      }
+      _handleInitialMessage();
     });
+  }
+
+  void _handleInitialMessage() {
+    final extra = GoRouterState.of(context).extra;
+    
+    if (extra != null) {
+      // Handle both old string format and new map format
+      if (extra is String && extra.isNotEmpty) {
+        // Legacy support for old string-based navigation
+        _chatController.sendMessage(extra);
+      } else if (extra is Map<String, dynamic>) {
+        // New format with both text and image support
+        final text = extra['text'] as String? ?? '';
+        final imageBytes = extra['imageBytes'] as Uint8List?;
+        
+        if (text.isNotEmpty || imageBytes != null) {
+          _chatController.sendMessage(text, imageBytes: imageBytes);
+        }
+      }
+    }
   }
 
   @override
   void dispose() {
     _chatController.dispose();
     super.dispose();
+  }
+
+  void _handleMessageSubmit(String message, {Uint8List? imageBytes}) {
+    _chatController.sendMessage(message, imageBytes: imageBytes);
+  }
+
+  void _handleStop() {
+    _chatController.stopResponse();
   }
 
   @override
@@ -61,6 +88,7 @@ class _ChatPageState extends State<ChatPage> {
               children: [
                 // Chat Header
                 ChatHeader(chatId: widget.chatId),
+                
                 // Messages Area
                 Expanded(
                   child: Center(
@@ -77,18 +105,24 @@ class _ChatPageState extends State<ChatPage> {
                                     ? const ChatEmptyState()
                                     : MessagesList(
                                         messages: _chatController.messages,
-                                        scrollController:
-                                            _chatController.scrollController,
+                                        scrollController: _chatController.scrollController,
                                       );
                               },
                             ),
                           ),
-                          // Modern Chat Input (new design)
+                          
+                          // Unified Chat Input for chat mode
                           AnimatedBuilder(
                             animation: _chatController,
                             builder: (context, child) {
-                              return ModernChatInput(
-                                controller: _chatController,
+                              return ChatInput(
+                                onSubmit: _handleMessageSubmit,
+                                onStop: _handleStop,
+                                placeholder: 'Type a message...',
+                                disabled: false,
+                                isLoading: _chatController.isLoading,
+                                mode: ChatInputMode.chat,
+                                style: ChatInputStyle.modern,
                               );
                             },
                           ),
